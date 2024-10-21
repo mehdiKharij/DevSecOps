@@ -11,13 +11,13 @@ pipeline {
         stage('Build') {
             steps {
                 // Construire le projet Maven
-                bat 'mvnw clean install'
+                bat 'mvn clean install'
             }
         }
         stage('Test') {
             steps {
                 // Exécuter les tests
-                bat 'mvnw test'
+                bat 'mvn test'
             }
         }
         stage('Deploy') {
