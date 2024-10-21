@@ -33,6 +33,13 @@ pipeline {
                 echo 'Déploiement de l\'application...'
             }
         }
+        stage('Secret Scanning') {
+    steps {
+        echo 'Scanning des secrets avec GitLeaks...'
+        bat 'gitleaks detect --source . --report-format json --report-path gitleaks-report.json'
+    }
+}
+
     }
 
     post {
