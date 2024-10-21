@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -12,19 +11,19 @@ pipeline {
         stage('Build') {
             steps {
                 // Construire le projet Maven
-                sh 'mvn clean install'
+                bat 'mvnw clean install'
             }
         }
         stage('Test') {
             steps {
                 // Exécuter les tests
-                sh 'mvn test'
+                bat 'mvnw test'
             }
         }
         stage('Deploy') {
             steps {
                 // Déploiement (peut être remplacé par votre stratégie de déploiement)
-                sh 'echo "Déploiement de l\'application..."'
+                echo 'Déploiement de l\'application...'
             }
         }
     }
@@ -32,7 +31,7 @@ pipeline {
     post {
         always {
             // Archive les fichiers importants à la fin
-            archiveArtifacts artifacts: '*/target/.jar', allowEmptyArchive: true
+            archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
         }
         success {
             // Notifier en cas de succès
