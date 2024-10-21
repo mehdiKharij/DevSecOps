@@ -4,25 +4,32 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Cloner le dépôt
+                // Cloner le dépôt depuis Git
                 git 'https://github.com/Mohamed-KBIBECH/DevSecOps.git'
             }
         }
         stage('Build') {
             steps {
-                // Construire le projet Maven
-                bat 'mvn clean install'
+                // Construire le projet avec Maven
+                // Utiliser mvnw si Maven Wrapper est utilisé, sinon remplacer par 'mvn'
+                bat 'mvnw clean install'
             }
         }
         stage('Test') {
             steps {
-                // Exécuter les tests
-                bat 'mvn test'
+                // Exécuter les tests unitaires et d'intégration
+                bat 'mvnw test'
+            }
+        }
+        stage('Package') {
+            steps {
+                // Créer le package JAR ou WAR
+                bat 'mvnw package'
             }
         }
         stage('Deploy') {
             steps {
-                // Déploiement (peut être remplacé par votre stratégie de déploiement)
+                // Déploiement (peut être ajusté selon vos besoins)
                 echo 'Déploiement de l\'application...'
             }
         }
@@ -30,15 +37,15 @@ pipeline {
 
     post {
         always {
-            // Archive les fichiers importants à la fin
+            // Archiver les fichiers générés (JAR/WAR) dans le répertoire target
             archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
         }
         success {
-            // Notifier en cas de succès
-            echo 'Le build a réussi !'
+            // Notification de succès
+            echo 'Le build a réussi et les tests ont été validés !'
         }
         failure {
-            // Notifier en cas d'échec
+            // Notification d'échec
             echo 'Le build a échoué.'
         }
     }
