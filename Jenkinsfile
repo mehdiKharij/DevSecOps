@@ -53,9 +53,11 @@ pipeline {
 stage('SCA with Dependency-Check') {
     steps {
         echo 'Analyse de la composition des sources avec OWASP Dependency-Check...'
-        bat 'dependency-check.bat --project "Spring Boot App" --scan . --format XML --out dependency-check-report.xml'
+        bat '"C:\\Users\\HP NOTEBOOK\Downloads\\dependency-check-10.0.2-release\\dependency-check\\bin\\dependency-check.bat" --project "demo" --scan . --format XML --out dependency-check-report.xml'
     }
 }
+        
+
 
     }
 
