@@ -37,8 +37,7 @@ pipeline {
         }
     }
 }
- }
-}
+
 
 
         stage('ZAP Security Scan') {
