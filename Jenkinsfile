@@ -20,22 +20,26 @@ pipeline {
         echo 'Déploiement du conteneur Docker...'
 
         script {
-            // Récupérer l'ID du conteneur en filtrant la sortie correctement
-            def containerId = bat(script: 'for /f "tokens=*" %i in (\'docker ps -q --filter "ancestor=devsecops"\') do @echo %i', returnStdout: true).trim()
+            // Nom de l'image mis à jour pour éviter les conflits
+            def imageName = 'devsecops:v1'
+
+            // Construire l'image Docker avec un nom unique
+            bat "docker build -t ${imageName} ."
+
+            // Récupérer l'ID du conteneur en filtrant la sortie
+            def containerId = bat(script: 'for /f "tokens=*" %i in (\'docker ps -q --filter \"ancestor=devsecops:v1\"\') do @echo %i', returnStdout: true).trim()
 
             if (containerId) {
                 echo "Arrêt du conteneur existant : ${containerId}"
                 bat "docker stop ${containerId}"
                 bat "docker rm ${containerId}"
             }
-        }
 
-        // Démarrer le nouveau conteneur en mode détaché
-        bat 'docker run -d -p 8082:8090 devsecops'
+            // Démarrer le nouveau conteneur en mode détaché
+            bat "docker run -d -p 8082:8090 ${imageName}"
 
-        // Vérifiez si le conteneur est bien démarré
-        script {
-            def runningContainer = bat(script: 'for /f "tokens=*" %i in (\'docker ps -q --filter "ancestor=devsecops"\') do @echo %i', returnStdout: true).trim()
+            // Vérifier si le conteneur est bien démarré
+            def runningContainer = bat(script: 'for /f "tokens=*" %i in (\'docker ps -q --filter \"ancestor=devsecops:v1\"\') do @echo %i', returnStdout: true).trim()
             if (!runningContainer) {
                 error 'Le conteneur Docker ne s\'est pas démarré correctement.'
             } else {
