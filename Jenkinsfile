@@ -27,8 +27,10 @@ pipeline {
             bat "docker build -t ${imageName} ."
 
             // Arrêter et supprimer les conteneurs existants
-            bat 'docker stop $(docker ps -q --filter "ancestor=devsecops") || true'
-            bat 'docker rm $(docker ps -aq --filter "ancestor=devsecops") || true'
+            bat '''
+            FOR /F "tokens=*" %i IN ('docker ps -q --filter "ancestor=devsecops"') DO docker stop %i
+            FOR /F "tokens=*" %i IN ('docker ps -aq --filter "ancestor=devsecops"') DO docker rm %i
+            '''
 
             // Démarrer le nouveau conteneur
             bat "docker run -d -p 8082:8090 ${imageName}"
@@ -37,6 +39,7 @@ pipeline {
         }
     }
 }
+
 
 
 
