@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-canary
+  template:
+    metadata:
+      labels:
+        app: app-canary
+    spec:
+      containers:
+      - name: app-canary
+        image: myregistry.com/devsecops:canary-${BUILD_NUMBER}
+        ports:
+        - containerPort: 8090
