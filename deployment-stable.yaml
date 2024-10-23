@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-stable
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: app-stable
+  template:
+    metadata:
+      labels:
+        app: app-stable
+    spec:
+      containers:
+      - name: app-stable
+        image: myregistry.com/devsecops:stable
+        ports:
+        - containerPort: 8090
