@@ -28,8 +28,10 @@ pipeline {
 
             // Arrêter et supprimer les conteneurs existants
             bat '''
-            FOR /F "tokens=*" %%i IN ('docker ps -q --filter "ancestor=devsecops"') DO docker stop %%i
-            FOR /F "tokens=*" %%i IN ('docker ps -aq --filter "ancestor=devsecops"') DO docker rm %%i
+            for /f "tokens=*" %i in ('docker ps -q --filter "ancestor=devsecops"') do docker stop %i
+            '''
+            bat '''
+            for /f "tokens=*" %i in ('docker ps -aq --filter "ancestor=devsecops"') do docker rm %i
             '''
 
             // Démarrer le nouveau conteneur
@@ -39,7 +41,6 @@ pipeline {
         }
     }
 }
-
         stage('ZAP Security Scan') {
             steps {
                 script {
