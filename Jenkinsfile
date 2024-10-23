@@ -33,6 +33,19 @@ pipeline {
         }
     }
 }
+        stage('Build Canary Image') {
+    steps {
+        script {
+            // Nom de l'image Canary avec un tag unique
+            def canaryImage = "devsecops:canary-${env.BUILD_NUMBER}"
+
+            // Construire l'image Docker Canary
+            bat "docker build -t ${canaryImage} ."
+            echo "Image Canary construite : ${canaryImage}"
+        }
+    }
+}
+
 
         stage('ZAP Security Scan') {
             steps {
