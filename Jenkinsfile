@@ -49,11 +49,37 @@ pipeline {
         }
         stage('Build') {
             steps {
-                // Construire le projet avec Maven
-                // Utiliser mvnw si Maven Wrapper est utilisé, sinon remplacer par 'mvn'
-                bat 'mvnw clean install'
+                echo 'Build du projet Maven...'
+                sh 'mvn clean package'
             }
         }
+
+        stage('Build Docker Image') {
+            steps {
+                echo 'Construction de l\'image Docker...'
+                sh 'docker build -t decvsecops .'
+            }
+        }
+
+        stage('Deploy Docker Container') {
+            steps {
+                echo 'Déploiement du conteneur Docker...'
+                
+                // Arrêter le conteneur en cours d'exécution (s'il existe)
+                script {
+                    def containerId = sh(script: "docker ps -q --filter 'ancestor=decvsecops'", returnStdout: true).trim()
+                    if (containerId) {
+                        sh "docker stop ${containerId}"
+                        sh "docker rm ${containerId}"
+                    }
+                }
+
+                // Démarrer le nouveau conteneur sur un port disponible
+                sh 'docker run -d -p 8081:8090 decvsecops'
+            }
+        }
+    }
+}
         stage('Test') {
             steps {
                 // Exécuter les tests unitaires et d'intégration
