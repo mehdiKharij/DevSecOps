@@ -16,20 +16,32 @@ pipeline {
         }
 
         stage('Deploy Docker Container') {
-            steps {
-                echo 'Déploiement du conteneur Docker...'
-                
-                script {
-                    def containerId = bat(script: "docker ps -q --filter 'ancestor=devsecops'", returnStdout: true).trim()
-                    if (containerId) {
-                        bat "docker stop ${containerId}"
-                        bat "docker rm ${containerId}"
-                    }
-                }
+    steps {
+        echo 'Déploiement du conteneur Docker...'
 
-                bat 'docker run -d -p 8082:8090 devsecops'
+        script {
+            def containerId = bat(script: "docker ps -q --filter 'ancestor=devsecops'", returnStdout: true).trim()
+            if (containerId) {
+                echo "Arrêt du conteneur existant : ${containerId}"
+                bat "docker stop ${containerId}"
+                bat "docker rm ${containerId}"
             }
         }
+
+        // Démarrage du nouveau conteneur en mode détaché
+        bat 'docker run -d -p 8082:8090 devsecops'
+
+        // Vérifiez si le conteneur est bien démarré
+        script {
+            def runningContainer = bat(script: "docker ps -q --filter 'ancestor=devsecops'", returnStdout: true).trim()
+            if (!runningContainer) {
+                error 'Le conteneur Docker ne s\'est pas démarré correctement.'
+            } else {
+                echo "Conteneur démarré avec succès : ${runningContainer}"
+            }
+        }
+    }
+}
 
         stage('ZAP Security Scan') {
             steps {
