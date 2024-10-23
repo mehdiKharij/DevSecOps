@@ -15,7 +15,7 @@ pipeline {
             }
         }
 
-    stage('Deploy Docker Container') {
+   stage('Deploy Docker Container') {
     steps {
         echo 'Déploiement du conteneur Docker...'
 
@@ -26,14 +26,6 @@ pipeline {
             // Construire une nouvelle image Docker avec un tag unique
             bat "docker build -t ${imageName} ."
 
-            // Arrêter et supprimer les conteneurs existants
-            bat '''
-            for /f "tokens=*" %i in ('docker ps -q --filter "ancestor=devsecops"') do docker stop %i
-            '''
-            bat '''
-            for /f "tokens=*" %i in ('docker ps -aq --filter "ancestor=devsecops"') do docker rm %i
-            '''
-
             // Démarrer le nouveau conteneur
             bat "docker run -d -p 8082:8090 ${imageName}"
             
@@ -41,6 +33,7 @@ pipeline {
         }
     }
 }
+
         stage('ZAP Security Scan') {
             steps {
                 script {
