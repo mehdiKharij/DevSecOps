@@ -11,41 +11,72 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo 'Construction de l\'image Docker...'
-                bat 'docker build -t devsecops .'
+                bat 'docker build -t devsecops:stable .'
             }
         }
 
-   stage('Deploy Docker Container') {
-    steps {
-        echo 'Déploiement du conteneur Docker...'
+        stage('Deploy Stable Container') {
+            steps {
+                script {
+                    // Vérifier si le conteneur stable est déjà en cours d'exécution
+                    def stableContainer = bat(script: 'docker ps -q --filter "name=stable-container"', returnStdout: true).trim()
 
-        script {
-            // Utiliser un tag unique basé sur le numéro de build Jenkins
-            def imageName = "devsecops:${env.BUILD_NUMBER}"
-
-            // Construire une nouvelle image Docker avec un tag unique
-            bat "docker build -t ${imageName} ."
-
-            // Démarrer le nouveau conteneur
-            bat "docker run -d -p 8082:8090 ${imageName}"
-            
-            echo "Conteneur déployé avec succès avec l'image : ${imageName}"
+                    // Démarrer le conteneur stable si nécessaire
+                    if (!stableContainer) {
+                        bat "docker run -d -p 8080:8090 --name stable-container devsecops:stable"
+                        echo "Conteneur stable démarré sur le port 8080."
+                    } else {
+                        echo "Le conteneur stable est déjà en cours d'exécution."
+                    }
+                }
+            }
         }
-    }
-}
+
         stage('Build Canary Image') {
-    steps {
-        script {
-            // Nom de l'image Canary avec un tag unique
-            def canaryImage = "devsecops:canary-${env.BUILD_NUMBER}"
+            steps {
+                script {
+                    // Nom de l'image Canary avec un tag unique
+                    def canaryImage = "devsecops:canary-${env.BUILD_NUMBER}"
 
-            // Construire l'image Docker Canary
-            bat "docker build -t ${canaryImage} ."
-            echo "Image Canary construite : ${canaryImage}"
+                    // Construire l'image Docker Canary
+                    bat "docker build -t ${canaryImage} ."
+                    echo "Image Canary construite : ${canaryImage}"
+                }
+            }
         }
-    }
-}
 
+        stage('Deploy Canary Container') {
+            steps {
+                script {
+                    // Nom de l'image Canary
+                    def canaryImage = "devsecops:canary-${env.BUILD_NUMBER}"
+
+                    // Démarrer le conteneur Canary
+                    bat "docker run -d -p 8081:8090 --name canary-container ${canaryImage}"
+                    echo "Conteneur Canary démarré sur le port 8081."
+                }
+            }
+        }
+
+        stage('Canary Traffic Routing (Simulated)') {
+            steps {
+                script {
+                    echo "Simuler le routage du trafic vers le conteneur Canary..."
+                    // Ici, vous pouvez intégrer un proxy comme NGINX ou Traefik
+                    echo "10% du trafic redirigé vers le Canary, 90% vers le stable (simulé)"
+                }
+            }
+        }
+
+        stage('Canary Validation') {
+            steps {
+                script {
+                    echo "Validation du déploiement Canary..."
+                    // Vous pouvez ajouter des scripts ou des appels à des APIs pour valider la nouvelle version
+                    // Par exemple, vérifier la disponibilité ou les performances du service Canary
+                }
+            }
+        }
 
         stage('ZAP Security Scan') {
             steps {
