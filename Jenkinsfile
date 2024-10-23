@@ -21,10 +21,10 @@ pipeline {
                     // Vérifier si le conteneur stable est déjà en cours d'exécution
                     def stableContainer = bat(script: 'docker ps -q --filter "name=stable-container"', returnStdout: true).trim()
 
-                    // Démarrer le conteneur stable si nécessaire
+                    // Démarrer le conteneur stable sur le port 8082 si nécessaire
                     if (!stableContainer) {
-                        bat "docker run -d -p 8080:8090 --name stable-container devsecops:stable"
-                        echo "Conteneur stable démarré sur le port 8080."
+                        bat "docker run -d -p 8082:8090 --name stable-container devsecops:stable"
+                        echo "Conteneur stable démarré sur le port 8082."
                     } else {
                         echo "Le conteneur stable est déjà en cours d'exécution."
                     }
@@ -51,9 +51,9 @@ pipeline {
                     // Nom de l'image Canary
                     def canaryImage = "devsecops:canary-${env.BUILD_NUMBER}"
 
-                    // Démarrer le conteneur Canary
-                    bat "docker run -d -p 8081:8090 --name canary-container ${canaryImage}"
-                    echo "Conteneur Canary démarré sur le port 8081."
+                    // Démarrer le conteneur Canary sur le port 8083
+                    bat "docker run -d -p 8083:8090 --name canary-container ${canaryImage}"
+                    echo "Conteneur Canary démarré sur le port 8083."
                 }
             }
         }
@@ -62,8 +62,8 @@ pipeline {
             steps {
                 script {
                     echo "Simuler le routage du trafic vers le conteneur Canary..."
-                    // Ici, vous pouvez intégrer un proxy comme NGINX ou Traefik
-                    echo "10% du trafic redirigé vers le Canary, 90% vers le stable (simulé)"
+                    // Ici, un proxy réel comme NGINX ou Traefik doit être configuré
+                    echo "10% du trafic redirigé vers le Canary (port 8083), 90% vers le stable (port 8082) (simulé)"
                 }
             }
         }
@@ -73,7 +73,6 @@ pipeline {
                 script {
                     echo "Validation du déploiement Canary..."
                     // Vous pouvez ajouter des scripts ou des appels à des APIs pour valider la nouvelle version
-                    // Par exemple, vérifier la disponibilité ou les performances du service Canary
                 }
             }
         }
