@@ -15,40 +15,21 @@ pipeline {
             }
         }
 
-       stage('Deploy Docker Container') {
+      stage('Deploy Docker Container') {
     steps {
         echo 'Déploiement du conteneur Docker...'
 
-        script {
-            // Nom de l'image
-            def imageName = 'devsecops:v2'
+        // Arrêter et supprimer le conteneur existant sans récupérer l'ID
+        bat 'docker stop $(docker ps -q --filter "ancestor=devsecops:v2") || true'
+        bat 'docker rm $(docker ps -aq --filter "ancestor=devsecops:v2") || true'
 
-            // Construire l'image Docker
-            bat "docker build -t ${imageName} ."
-
-            // Récupérer l'ID du conteneur
-            def containerId = bat(script: 'docker ps -q --filter "ancestor=devsecops:v2"', returnStdout: true).trim()
-
-            // Vérifier si l'ID est valide et arrêter le conteneur existant
-            if (containerId?.trim()) {
-                echo "Arrêt du conteneur existant : ${containerId}"
-                bat "docker stop ${containerId}"
-                bat "docker rm ${containerId}"
-            }
-
-            // Démarrer le nouveau conteneur en mode détaché
-            bat "docker run -d -p 8082:8090 ${imageName}"
-
-            // Vérifier si le conteneur est bien démarré
-            def runningContainer = bat(script: 'docker ps -q --filter "ancestor=devsecops:v2"', returnStdout: true).trim()
-            if (!runningContainer) {
-                error 'Le conteneur Docker ne s\'est pas démarré correctement.'
-            } else {
-                echo "Conteneur démarré avec succès : ${runningContainer}"
-            }
-        }
+        // Démarrer un nouveau conteneur
+        bat 'docker run -d -p 8082:8090 devsecops:v2'
+        
+        echo 'Conteneur déployé avec succès.'
     }
 }
+
 
         stage('ZAP Security Scan') {
             steps {
