@@ -6,13 +6,19 @@ pipeline {
        stage('ZAP Security Scan') {
     steps {
         script {
-            // URL de l'application à scanner
-            def appUrl = 'http://localhost:8090'  // Remplace par l'URL réelle de ton application
+            // URL de l'application accessible via ngrok
+            def appUrl = 'https://ed3a-105-73-96-62.ngrok-free.app'
 
-            // Démarrer le scan actif de ZAP
+            // Démarrer le spidering de ZAP pour ajouter l'URL au contexte
+            bat "curl \"http://localhost:8081/JSON/spider/action/scan/?url=${appUrl}&recurse=true\""
+            
+            // Attendre la fin du spidering (ajuster le temps si nécessaire)
+            sleep(60)
+
+            // Lancer le scan actif de ZAP
             bat "curl \"http://localhost:8081/JSON/ascan/action/scan/?url=${appUrl}&recurse=true&inScopeOnly=false&scanPolicyName=Default%20Policy&method=NULL&postData=NULL\""
             
-            // Attendre que le scan se termine (tu peux ajuster le temps selon les besoins)
+            // Attendre la fin du scan actif
             sleep(300)
         }
     }
@@ -23,6 +29,7 @@ pipeline {
         }
     }
 }
+
 
     
        stage('SCA with Dependency-Check') {
