@@ -49,9 +49,12 @@ pipeline {
         }
     }
 }
-        stage('DP Check'){
-steps{
-dependencyCheck additionalArguments: ' -- format HTML', odcInstallation: 'Dep-Check' }}
+      stage('DP Check') {
+    steps {
+        dependencyCheck additionalArguments: '--scan ./src/main/java --format HTML --disableAssembly --data /var/lib/dependency-check/data',
+                        odcInstallation: 'Dep-Check'
+    }
+}
 
 
       
