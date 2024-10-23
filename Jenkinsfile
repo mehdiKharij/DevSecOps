@@ -15,19 +15,29 @@ pipeline {
             }
         }
 
-      stage('Deploy Docker Container') {
+    stage('Deploy Docker Container') {
     steps {
         echo 'Déploiement du conteneur Docker...'
 
-        // Arrêter et supprimer le conteneur existant sans récupérer l'ID
-        bat 'docker stop $(docker ps -q --filter "ancestor=devsecops:v2") || true'
-        bat 'docker rm $(docker ps -aq --filter "ancestor=devsecops:v2") || true'
+        script {
+            // Utiliser un tag unique basé sur le numéro de build Jenkins
+            def imageName = "devsecops:${env.BUILD_NUMBER}"
 
-        // Démarrer un nouveau conteneur
-        bat 'docker run -d -p 8082:8090 devsecops:v2'
-        
-        echo 'Conteneur déployé avec succès.'
+            // Construire une nouvelle image Docker avec un tag unique
+            bat "docker build -t ${imageName} ."
+
+            // Arrêter et supprimer les conteneurs existants
+            bat 'docker stop $(docker ps -q --filter "ancestor=devsecops") || true'
+            bat 'docker rm $(docker ps -aq --filter "ancestor=devsecops") || true'
+
+            // Démarrer le nouveau conteneur
+            bat "docker run -d -p 8082:8090 ${imageName}"
+            
+            echo "Conteneur déployé avec succès avec l'image : ${imageName}"
+        }
     }
+}
+ }
 }
 
 
