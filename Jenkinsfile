@@ -47,17 +47,11 @@ pipeline {
                 git 'https://github.com/Mohamed-KBIBECH/DevSecOps.git'
             }
         }
-        stage('Build') {
-            steps {
-                echo 'Build du projet Maven...'
-                sh 'mvn clean package'
-            }
-        }
-
+        
         stage('Build Docker Image') {
             steps {
                 echo 'Construction de l\'image Docker...'
-                sh 'docker build -t decvsecops .'
+                sh 'docker build -t devsecops.'
             }
         }
 
@@ -75,7 +69,7 @@ pipeline {
                 }
 
                 // Démarrer le nouveau conteneur sur un port disponible
-                sh 'docker run -d -p 8081:8090 decvsecops'
+                sh 'docker run -d -p 8082:8090 decvsecops'
             }
         }
     }
