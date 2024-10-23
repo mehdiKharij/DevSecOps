@@ -5,14 +5,14 @@ pipeline {
        stage('SCA with Dependency-Check') {
     steps {
         echo 'Analyse de la composition des sources avec OWASP Dependency-Check...'
-        bat '"C:\\Users\\HP NOTEBOOK\\Downloads\\dependency-check-10.0.2-release\\dependency-check\\bin\\dependency-check.bat" --project "demo" --scan . --format HTML --out dependency-check-report2.xml --nvdApiKey 181c8fc5-2ddc-4d15-99bf-764fff8d50dc --disableAssembly'
+        bat '"C:\\Users\\HP NOTEBOOK\\Downloads\\dependency-check-10.0.2-release\\dependency-check\\bin\\dependency-check.bat" --project "demo" --scan . --format HTML --out dependency-check-report3.xml --nvdApiKey 181c8fc5-2ddc-4d15-99bf-764fff8d50dc --disableAssembly'
     }
 }
         stage('OWASP ZAP Security Scan') {
             steps {
                 script {
                     zap(
-                        zapHome: 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\ZAP\Zed Attack Proxy', // Le chemin vers l'installation de ZAP si nécessaire
+                        zapHome: 'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\ZAP\\Zed Attack Proxy', // Le chemin vers l'installation de ZAP si nécessaire
                         targetURL: 'http://localhost:8090',
                         failBuild: false, // Si tu veux que la build échoue si ZAP détecte des vulnérabilités
                         reportsDir: 'zap-reports',
