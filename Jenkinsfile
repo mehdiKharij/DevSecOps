@@ -8,6 +8,34 @@ pipeline {
         bat '"C:\\Users\\HP NOTEBOOK\\Downloads\\dependency-check-10.0.2-release\\dependency-check\\bin\\dependency-check.bat" --project "demo" --scan . --format HTML --out dependency-check-reportt.xml --nvdApiKey 181c8fc5-2ddc-4d15-99bf-764fff8d50dc --disableAssembly'
     }
 }
+        stage('OWASP ZAP Security Scan') {
+            steps {
+                script {
+                    zap(
+                        zapHome: '/path/to/zap', // Le chemin vers l'installation de ZAP si nécessaire
+                        targetURL: 'http://your-application-url',
+                        failBuild: true, // Si tu veux que la build échoue si ZAP détecte des vulnérabilités
+                        reportsDir: 'zap-reports',
+                        format: 'html',
+                        reportName: 'OWASP-ZAP-Report'
+                    )
+                }
+            }
+        }
+        
+        stage('Post-Processing') {
+            steps {
+                // Par exemple : Publier les rapports OWASP ZAP
+                publishHTML(target: [
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: 'zap-reports',
+                    reportFiles: 'OWASP-ZAP-Report.html',
+                    reportName: 'OWASP ZAP Security Report'
+                ])
+            }
+        }
 
 
         stage('Checkout') {
