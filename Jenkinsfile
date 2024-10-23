@@ -72,8 +72,8 @@ pipeline {
                 sh 'docker run -d -p 8082:8090 decvsecops'
             }
         }
-    }
-}
+    
+
         stage('Test') {
             steps {
                 // Exécuter les tests unitaires et d'intégration
