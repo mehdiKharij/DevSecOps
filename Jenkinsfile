@@ -52,11 +52,10 @@ pipeline {
      stage('SCA with Dependency-Check') {
     steps {
         echo 'Analyse de la composition des sources avec OWASP Dependency-Check...'
-        bat '"C:\\Users\\HP NOTEBOOK\\Downloads\\dependency-check-10.0.2-release\\dependency-check\\bin\\dependency-check.bat" --project "demo" --scan . --format XML --out dependency-check-report.xml --nvdApiKey 181c8fc5-2ddc-4d15-99bf-764fff8d50dc --disableAssembly --data C:\\Users\\HP NOTEBOOK\\Downloads\\dependency-check-10.0.2-release\\dependency-check\\data --noupdate'
-
-
+        bat '"C:\\Users\\HP NOTEBOOK\\Downloads\\dependency-check-10.0.2-release\\dependency-check\\bin\\dependency-check.bat" --project "demo" --scan . --format XML --out dependency-check-report.xml --nvdApiKey 181c8fc5-2ddc-4d15-99bf-764fff8d50dc --disableAssembly --disableRetireJS --disableNodeAudit --disableNuspec --disablePyPackage --disableRubyGems --disableBundleAudit'
     }
 }
+
 
 
       
