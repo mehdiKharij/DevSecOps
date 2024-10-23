@@ -25,7 +25,7 @@ pipeline {
                 }
             }
         }
-    }
+    
        stage('SCA with Dependency-Check') {
     steps {
         echo 'Analyse de la composition des sources avec OWASP Dependency-Check...'
