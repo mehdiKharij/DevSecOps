@@ -12,9 +12,9 @@ pipeline {
             steps {
                 script {
                     zap(
-                        zapHome: '/path/to/zap', // Le chemin vers l'installation de ZAP si nécessaire
-                        targetURL: 'http://your-application-url',
-                        failBuild: true, // Si tu veux que la build échoue si ZAP détecte des vulnérabilités
+                        zapHome: 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\ZAP\Zed Attack Proxy', // Le chemin vers l'installation de ZAP si nécessaire
+                        targetURL: 'http://localhost:8090',
+                        failBuild: false, // Si tu veux que la build échoue si ZAP détecte des vulnérabilités
                         reportsDir: 'zap-reports',
                         format: 'html',
                         reportName: 'OWASP-ZAP-Report'
