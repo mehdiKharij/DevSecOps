@@ -20,8 +20,7 @@ pipeline {
                 always {
                     // Optionnel : Récupérer un rapport ZAP au format HTML ou autre
                     bat 'curl http://localhost:8081/OTHER/core/other/htmlreport/ > zap_report.html'
-                    // Arrêter ZAP après le scan
-                    bat 'zap.bat -cmd -shutdown'
+                    
                 }
             }
         }
