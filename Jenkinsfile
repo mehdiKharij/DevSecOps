@@ -20,8 +20,8 @@ pipeline {
         echo 'Déploiement du conteneur Docker...'
 
         script {
-            // Utiliser des guillemets doubles pour le filtre
-            def containerId = bat(script: 'docker ps -q --filter "ancestor=devvsecops"', returnStdout: true).trim()
+            // Récupérer l'ID du conteneur en filtrant la sortie correctement
+            def containerId = bat(script: 'for /f "tokens=*" %i in (\'docker ps -q --filter "ancestor=devsecops"\') do @echo %i', returnStdout: true).trim()
 
             if (containerId) {
                 echo "Arrêt du conteneur existant : ${containerId}"
@@ -31,11 +31,11 @@ pipeline {
         }
 
         // Démarrer le nouveau conteneur en mode détaché
-        bat 'docker run -d -p 8082:8090 devvsecops'
+        bat 'docker run -d -p 8082:8090 devsecops'
 
         // Vérifiez si le conteneur est bien démarré
         script {
-            def runningContainer = bat(script: 'docker ps -q --filter "ancestor=devvsecops"', returnStdout: true).trim()
+            def runningContainer = bat(script: 'for /f "tokens=*" %i in (\'docker ps -q --filter "ancestor=devsecops"\') do @echo %i', returnStdout: true).trim()
             if (!runningContainer) {
                 error 'Le conteneur Docker ne s\'est pas démarré correctement.'
             } else {
