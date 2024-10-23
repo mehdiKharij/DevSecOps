@@ -33,7 +33,7 @@ pipeline {
         }
 
         // Lancer le nouveau conteneur en mode détaché sans nohup
-        sh 'docker run -d -p 8082:8090 decvsecops'
+        sh 'docker run -d -p 8083:8090 decvsecops'
     }
 }
 // Ajout d'une nouvelle étape pour le scan ZAP
