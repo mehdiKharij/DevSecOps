@@ -3,27 +3,27 @@ pipeline {
 
     stages {
         // Ajout d'une nouvelle étape pour le scan ZAP
-        stage('ZAP Security Scan') {
-            steps {
-                script {
-                    // Lancer ZAP en mode daemon
-                    //bat 'zap.bat -daemon -host localhost -port 8081 -config api.disablekey=true'
-                    // URL de l'application à scanner
-                    def appUrl = 'http://localhost:8090'  // Remplace par l'URL réelle de ton application
-                    // Démarrer le scan actif de ZAP
-                    bat "curl http://localhost:8081/JSON/ascan/action/scan/?url=${appUrl}&recurse=true&inScopeOnly=false&scanPolicyName=Default+Policy&method=NULL&postData=NULL"
-                    // Attendre que le scan se termine (tu peux ajuster le temps selon les besoins)
-                    sleep(300)
-                }
-            }
-            post {
-                always {
-                    // Optionnel : Récupérer un rapport ZAP au format HTML ou autre
-                    bat 'curl http://localhost:8081/OTHER/core/other/htmlreport/ > zap_report.html'
-                    
-                }
-            }
+       stage('ZAP Security Scan') {
+    steps {
+        script {
+            // URL de l'application à scanner
+            def appUrl = 'http://localhost:8090'  // Remplace par l'URL réelle de ton application
+
+            // Démarrer le scan actif de ZAP
+            bat "curl \"http://localhost:8081/JSON/ascan/action/scan/?url=${appUrl}&recurse=true&inScopeOnly=false&scanPolicyName=Default%20Policy&method=NULL&postData=NULL\""
+            
+            // Attendre que le scan se termine (tu peux ajuster le temps selon les besoins)
+            sleep(300)
         }
+    }
+    post {
+        always {
+            // Récupérer un rapport ZAP au format HTML ou autre
+            bat 'curl "http://localhost:8081/OTHER/core/other/htmlreport/" > zap_report.html'
+        }
+    }
+}
+
     
        stage('SCA with Dependency-Check') {
     steps {
