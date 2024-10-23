@@ -2,7 +2,41 @@ pipeline {
     agent any
 
     stages {
-        // Ajout d'une nouvelle étape pour le scan ZAP
+            
+
+
+        stage('Checkout') {
+            steps {
+                // Cloner le dépôt depuis Git
+                git 'https://github.com/Mohamed-KBIBECH/DevSecOps.git'
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                echo 'Construction de l\'image Docker...'
+                sh 'docker build -t devsecops.'
+            }
+        }
+
+        stage('Deploy Docker Container') {
+    steps {
+        echo 'Déploiement du conteneur Docker...'
+        
+        // Arrêter le conteneur en cours d'exécution (s'il existe)
+        script {
+            def containerId = sh(script: "docker ps -q --filter 'ancestor=decvsecops'", returnStdout: true).trim()
+            if (containerId) {
+                sh "docker stop ${containerId}"
+                sh "docker rm ${containerId}"
+            }
+        }
+
+        // Lancer le nouveau conteneur en mode détaché sans nohup
+        sh 'docker run -d -p 8082:8090 decvsecops'
+    }
+}
+// Ajout d'une nouvelle étape pour le scan ZAP
        stage('ZAP Security Scan') {
     steps {
         script {
@@ -38,40 +72,7 @@ pipeline {
         bat '"C:\\Users\\HP NOTEBOOK\\Downloads\\dependency-check-10.0.2-release\\dependency-check\\bin\\dependency-check.bat" --project "demo" --scan . --format HTML --out dependency-check-report4.xml --nvdApiKey 181c8fc5-2ddc-4d15-99bf-764fff8d50dc --disableAssembly'
     }
 }
-        
-
-
-        stage('Checkout') {
-            steps {
-                // Cloner le dépôt depuis Git
-                git 'https://github.com/Mohamed-KBIBECH/DevSecOps.git'
-            }
-        }
-        
-        stage('Build Docker Image') {
-            steps {
-                echo 'Construction de l\'image Docker...'
-                sh 'docker build -t devsecops.'
-            }
-        }
-
-        stage('Deploy Docker Container') {
-            steps {
-                echo 'Déploiement du conteneur Docker...'
-                
-                // Arrêter le conteneur en cours d'exécution (s'il existe)
-                script {
-                    def containerId = sh(script: "docker ps -q --filter 'ancestor=decvsecops'", returnStdout: true).trim()
-                    if (containerId) {
-                        sh "docker stop ${containerId}"
-                        sh "docker rm ${containerId}"
-                    }
-                }
-
-                // Démarrer le nouveau conteneur sur un port disponible
-                sh 'docker run -d -p 8082:8090 decvsecops'
-            }
-        }
+    
     
 
         stage('Test') {
