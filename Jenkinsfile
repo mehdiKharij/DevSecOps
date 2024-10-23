@@ -15,7 +15,7 @@ pipeline {
             }
         }
 
-        stage('Deploy Docker Container') {
+       stage('Deploy Docker Container') {
     steps {
         echo 'Déploiement du conteneur Docker...'
 
@@ -26,10 +26,11 @@ pipeline {
             // Construire l'image Docker
             bat "docker build -t ${imageName} ."
 
-            // Récupérer l'ID du conteneur sans utiliser de boucle
+            // Récupérer l'ID du conteneur
             def containerId = bat(script: 'docker ps -q --filter "ancestor=devsecops:v2"', returnStdout: true).trim()
 
-            if (containerId) {
+            // Vérifier si l'ID est valide et arrêter le conteneur existant
+            if (containerId?.trim()) {
                 echo "Arrêt du conteneur existant : ${containerId}"
                 bat "docker stop ${containerId}"
                 bat "docker rm ${containerId}"
@@ -48,7 +49,6 @@ pipeline {
         }
     }
 }
-
 
         stage('ZAP Security Scan') {
             steps {
