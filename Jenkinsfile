@@ -2,12 +2,55 @@ pipeline {
     agent any
 
     stages {
+        // 1. Cloner le dépôt
         stage('Checkout') {
             steps {
                 git 'https://github.com/Mohamed-KBIBECH/DevSecOps.git'
             }
         }
+        
+        // 2. Analyse de la composition des sources avec Dependency-Check
+        stage('SCA with Dependency-Check') {
+            steps {
+                echo 'Analyse de la composition des sources avec OWASP Dependency-Check...'
+                bat '"C:\\Users\\HP NOTEBOOK\\Downloads\\dependency-check-10.0.2-release\\dependency-check\\bin\\dependency-check.bat" --project "demo" --scan . --format HTML --out dependency-check-report.html --nvdApiKey 181c8fc5-2ddc-4d15-99bf-764fff8d50dc --disableAssembly'
+            }
+        }
 
+        // 3. Analyse de sécurité des secrets avec GitLeaks
+        stage('Secret Scanning') {
+            steps {
+                bat 'gitleaks detect --source . --report-format json --report-path gitleaks-report.json'
+            }
+        }
+
+        // 4. Analyse du rapport de sécurité des secrets
+        stage('Analyze Secrets Report') {
+            steps {
+                script {
+                    def report = readFile('gitleaks-report.json')
+                    if (report.contains('leak')) {
+                        error 'Secrets détectés ! Le build est arrêté.'
+                    }
+                }
+            }
+        }
+
+        // 5. Exécution des tests
+        stage('Test') {
+            steps {
+                bat 'mvnw.cmd test'
+            }
+        }
+
+        // 6. Création du package
+        stage('Package') {
+            steps {
+                bat 'mvnw.cmd package'
+            }
+        }
+
+        // 7. Construction de l'image Docker stable
         stage('Build Docker Image') {
             steps {
                 echo 'Construction de l\'image Docker...'
@@ -15,20 +58,28 @@ pipeline {
             }
         }
 
-        stage('Deploy Stable with Kubernetes LoadBalancer') {
+        // 8. Déploiement du conteneur stable
+        stage('Deploy Stable Container') {
             steps {
                 script {
-                    // Appliquer le manifest Kubernetes pour le déploiement stable avec un LoadBalancer
-                    bat 'kubectl apply -f k8s-manifests/deployment-stable.yaml'
-                    echo "Déploiement stable avec Kubernetes LoadBalancer effectué."
+                    // Vérifier si le conteneur stable est déjà en cours d'exécution
+                    def stableContainer = bat(script: 'docker ps -q --filter "name=stable-container"', returnStdout: true).trim()
+
+                    // Démarrer le conteneur stable sur le port 8082 si nécessaire
+                    if (!stableContainer) {
+                        bat "docker run -d -p 8082:8090 --name stable-container devsecops:stable"
+                        echo "Conteneur stable démarré sur le port 8082."
+                    } else {
+                        echo "Le conteneur stable est déjà en cours d'exécution."
+                    }
                 }
             }
         }
 
+        // 9. Construction de l'image Docker Canary
         stage('Build Canary Image') {
             steps {
                 script {
-                    // Nom de l'image Canary avec un tag unique
                     def canaryImage = "devsecops:canary-${env.BUILD_NUMBER}"
 
                     // Construire l'image Docker Canary
@@ -38,35 +89,39 @@ pipeline {
             }
         }
 
-        stage('Deploy Canary with Kubernetes LoadBalancer') {
+        // 10. Déploiement du conteneur Canary
+        stage('Deploy Canary Container') {
             steps {
                 script {
-                    // Appliquer le manifest Kubernetes pour le déploiement Canary avec un LoadBalancer
-                    bat 'kubectl apply -f k8s-manifests/deployment-canary.yaml'
-                    echo "Déploiement Canary avec Kubernetes LoadBalancer effectué."
+                    def canaryImage = "devsecops:canary-${env.BUILD_NUMBER}"
+
+                    // Démarrer le conteneur Canary sur le port 8083
+                    bat "docker run -d -p 8083:8090 --name canary-container ${canaryImage}"
+                    echo "Conteneur Canary démarré sur le port 8083."
                 }
             }
         }
 
-        stage('Canary Traffic Routing with LoadBalancer') {
+        // 11. Simuler le routage du trafic Canary
+        stage('Canary Traffic Routing (Simulated)') {
             steps {
                 script {
-                    echo "Routage du trafic réel avec le LoadBalancer..."
-                    echo "90% du trafic redirigé vers le stable, 10% vers le Canary."
+                    echo "Simuler le routage du trafic vers le conteneur Canary..."
+                    echo "10% du trafic redirigé vers le Canary (port 8083), 90% vers le stable (port 8082) (simulé)"
                 }
             }
         }
 
+        // 12. Validation du déploiement Canary
         stage('Canary Validation') {
             steps {
                 script {
                     echo "Validation du déploiement Canary..."
-                    // Ajouter des scripts ou des appels à des APIs pour valider la nouvelle version
-                    bat 'curl http://<EXTERNAL_IP_CANARY_SERVICE>' // Remplacer par l'IP externe du service LoadBalancer
                 }
             }
         }
 
+        // 13. Scan de sécurité avec ZAP
         stage('ZAP Security Scan') {
             steps {
                 script {
@@ -80,42 +135,6 @@ pipeline {
             post {
                 always {
                     bat 'curl "http://localhost:8081/OTHER/core/other/htmlreport/" > zap_report1.html'
-                }
-            }
-        }
-
-        stage('SCA with Dependency-Check') {
-            steps {
-                echo 'Analyse de la composition des sources avec OWASP Dependency-Check...'
-                bat '"C:\\Users\\HP NOTEBOOK\\Downloads\\dependency-check-10.0.2-release\\dependency-check\\bin\\dependency-check.bat" --project "demo" --scan . --format HTML --out dependency-check-report.html --nvdApiKey 181c8fc5-2ddc-4d15-99bf-764fff8d50dc --disableAssembly'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                bat 'mvnw.cmd test'
-            }
-        }
-
-        stage('Package') {
-            steps {
-                bat 'mvnw.cmd package'
-            }
-        }
-
-        stage('Secret Scanning') {
-            steps {
-                bat 'gitleaks detect --source . --report-format json --report-path gitleaks-report.json'
-            }
-        }
-
-        stage('Analyze Secrets Report') {
-            steps {
-                script {
-                    def report = readFile('gitleaks-report.json')
-                    if (report.contains('leak')) {
-                        error 'Secrets détectés ! Le build est arrêté.'
-                    }
                 }
             }
         }
