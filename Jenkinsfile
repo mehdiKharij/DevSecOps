@@ -32,7 +32,7 @@ pipeline {
             }
         }
 
-        stage('Build Canary Image') {
+      stage('Build Canary Image') {
             steps {
                 script {
                     // Nom de l'image Canary avec un tag unique
