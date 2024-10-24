@@ -52,7 +52,7 @@ pipeline {
                     def canaryImage = "devsecops:canary-${env.BUILD_NUMBER}"
 
                     // Démarrer le conteneur Canary sur le port 8083
-                    bat "docker run -d -p 8083:8090 --name canary-container ${canaryImage}"
+                    bat "docker run -d -p 8083:8090 --name canary-container1 ${canaryImage}"
                     echo "Conteneur Canary démarré sur le port 8083."
                 }
             }
