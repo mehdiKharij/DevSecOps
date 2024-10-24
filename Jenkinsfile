@@ -13,7 +13,8 @@ pipeline {
         stage('SCA with Dependency-Check') {
             steps {
                 echo 'Analyse de la composition des sources avec OWASP Dependency-Check...'
-                bat '"C:\Users\user\Downloads\dependency-check\bin\dependency-check.bat" --project "demo" --scan . --format HTML --out dependency-check-report.html --nvdApiKey 181c8fc5-2ddc-4d15-99bf-764fff8d50dc --disableAssembly'
+                bat '"C:\\Users\\user\\Downloads\\dependency-check\\bin\\dependency-check.bat" --project "demo" --scan . --format HTML --out dependency-check-report.html --nvdApiKey 181c8fc5-2ddc-4d15-99bf-764fff8d50dc --disableAssembly'
+
             }
         }
 
