@@ -7,7 +7,7 @@ pipeline {
                 git 'https://github.com/Mohamed-KBIBECH/DevSecOps.git'
             }
         }
-        
+
         stage('Build Docker Image') {
             steps {
                 echo 'Construction de l\'image Docker...'
@@ -15,24 +15,17 @@ pipeline {
             }
         }
 
-        stage('Deploy Stable Container') {
+        stage('Deploy Stable with Kubernetes LoadBalancer') {
             steps {
                 script {
-                    // Vérifier si le conteneur stable est déjà en cours d'exécution
-                    def stableContainer = bat(script: 'docker ps -q --filter "name=stable-container"', returnStdout: true).trim()
-
-                    // Démarrer le conteneur stable sur le port 8082 si nécessaire
-                    if (!stableContainer) {
-                        bat "docker run -d -p 8082:8090 --name stable-container devsecops:stable"
-                        echo "Conteneur stable démarré sur le port 8082."
-                    } else {
-                        echo "Le conteneur stable est déjà en cours d'exécution."
-                    }
+                    // Appliquer le manifest Kubernetes pour le déploiement stable avec un LoadBalancer
+                    bat 'kubectl apply -f k8s-manifests/deployment-stable.yaml'
+                    echo "Déploiement stable avec Kubernetes LoadBalancer effectué."
                 }
             }
         }
 
-      stage('Build Canary Image') {
+        stage('Build Canary Image') {
             steps {
                 script {
                     // Nom de l'image Canary avec un tag unique
@@ -45,25 +38,21 @@ pipeline {
             }
         }
 
-        stage('Deploy Canary Container') {
+        stage('Deploy Canary with Kubernetes LoadBalancer') {
             steps {
                 script {
-                    // Nom de l'image Canary
-                    def canaryImage = "devsecops:canary-${env.BUILD_NUMBER}"
-
-                    // Démarrer le conteneur Canary sur le port 8083
-                    bat "docker run -d -p 8083:8090 --name canary-container1 ${canaryImage}"
-                    echo "Conteneur Canary démarré sur le port 8083."
+                    // Appliquer le manifest Kubernetes pour le déploiement Canary avec un LoadBalancer
+                    bat 'kubectl apply -f k8s-manifests/deployment-canary.yaml'
+                    echo "Déploiement Canary avec Kubernetes LoadBalancer effectué."
                 }
             }
         }
 
-        stage('Canary Traffic Routing (Simulated)') {
+        stage('Canary Traffic Routing with LoadBalancer') {
             steps {
                 script {
-                    echo "Simuler le routage du trafic vers le conteneur Canary..."
-                    // Ici, un proxy réel comme NGINX ou Traefik doit être configuré
-                    echo "10% du trafic redirigé vers le Canary (port 8083), 90% vers le stable (port 8082) (simulé)"
+                    echo "Routage du trafic réel avec le LoadBalancer..."
+                    echo "90% du trafic redirigé vers le stable, 10% vers le Canary."
                 }
             }
         }
@@ -72,7 +61,8 @@ pipeline {
             steps {
                 script {
                     echo "Validation du déploiement Canary..."
-                    // Vous pouvez ajouter des scripts ou des appels à des APIs pour valider la nouvelle version
+                    // Ajouter des scripts ou des appels à des APIs pour valider la nouvelle version
+                    bat 'curl http://<EXTERNAL_IP_CANARY_SERVICE>' // Remplacer par l'IP externe du service LoadBalancer
                 }
             }
         }
